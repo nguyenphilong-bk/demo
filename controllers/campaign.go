@@ -1,10 +1,11 @@
 package controllers
 
 import (
-	"strconv"
+	"encoding/json"
 
 	"github.com/Massad/gin-boilerplate/forms"
-	"github.com/Massad/gin-boilerplate/models"
+	"github.com/Massad/gin-boilerplate/services"
+	"github.com/Massad/gin-boilerplate/utils"
 
 	"net/http"
 
@@ -14,7 +15,7 @@ import (
 //CampaignController ...
 type CampaignController struct{}
 
-var campaignModel = new(models.CampaignModel)
+var campaignService = new(services.CampaignService)
 var campaignForm = new(forms.CampaignForm)
 
 //Create ...
@@ -25,29 +26,42 @@ func (ctrl CampaignController) Create(c *gin.Context) {
 
 	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
 		message := campaignForm.Create(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
+		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: message})
 		return
 	}
 
-	id, err := campaignModel.Create(userID, form)
+	id, err := campaignService.Create(userID, form)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Campaign could not be created"})
+		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Campaign could not be created"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: "Campaign could not be created"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign created", "id": id})
+	result := map[string]interface{}{}
+	result["id"] = id
+	
+	// c.JSON(http.StatusOK, gin.H{"message": "Campaign created", "id": id})
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Campaign created successfully", Data: result})
 }
 
 //All ...
 func (ctrl CampaignController) All(c *gin.Context) {
 	// userID := getUserID(c)
-	results, err := campaignModel.All()
+	results, err := campaignService.All()
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Could not get campaigns"})
+		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Could not get campaigns"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.RetrieveResponse{StatusCode: http.StatusBadRequest, Message: "Could not get campaigns"})
+
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"results": results})
+	data := make([]interface{}, len(results))
+	for i, v := range results {
+		data[i] = v
+	}
+
+	c.JSON(http.StatusOK, utils.RetrieveResponse{StatusCode: http.StatusOK, Data: data})
 }
 
 //One ...
@@ -55,43 +69,50 @@ func (ctrl CampaignController) One(c *gin.Context) {
 	// userID := getUserID(c)
 	id := c.Param("id")
 
-	data, err := campaignModel.One(id)
+	data, err := campaignService.One(id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Campaign not found"})
+		// c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Campaign not found"})
+		c.AbortWithStatusJSON(http.StatusNotFound, utils.Response{StatusCode: http.StatusBadRequest, Message: "Campaign not found"})
+
 		return
 	}
+	
+	temp, _ := json.Marshal(&data)
+	var result map[string]interface{}
+	json.Unmarshal(temp, &result)
 
-	c.JSON(http.StatusOK, gin.H{"data": data})
+	// c.JSON(http.StatusOK, gin.H{"data": data})
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Data: result})
 }
 
 //Update ...
-func (ctrl CampaignController) Update(c *gin.Context) {
-	userID := getUserID(c)
+// func (ctrl CampaignController) Update(c *gin.Context) {
+// 	userID := getUserID(c)
 
-	id := c.Param("id")
+// 	id := c.Param("id")
 
-	getID, err := strconv.ParseInt(id, 10, 64)
-	if getID == 0 || err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Invalid parameter"})
-		return
-	}
+// 	getID, err := strconv.ParseInt(id, 10, 64)
+// 	if getID == 0 || err != nil {
+// 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Invalid parameter"})
+// 		return
+// 	}
 
-	var form forms.CreateCampaignForm
+// 	var form forms.CreateCampaignForm
 
-	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
-		message := campaignForm.Create(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
-		return
-	}
+// 	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
+// 		message := campaignForm.Create(validationErr)
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
+// 		return
+// 	}
 
-	err = campaignModel.Update(userID, getID, form)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Campaign could not be updated"})
-		return
-	}
+// 	err = campaignService.Update(userID, getID, form)
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be updated"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign updated"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"message": "Campaign updated"})
+// }
 
 //Delete ...
 func (ctrl CampaignController) Delete(c *gin.Context) {
@@ -99,12 +120,13 @@ func (ctrl CampaignController) Delete(c *gin.Context) {
 
 	id := c.Param("id")
 
-	err := campaignModel.Delete(userID, id)
+	err := campaignService.Delete(userID, id)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Campaign could not be deleted"})
+		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be deleted"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: "Campaign could not be deleted"})
+
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign deleted"})
-
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Campaign deleted successfully"})
 }

@@ -27,7 +27,7 @@ type Campaign struct {
 type CampaignModel struct{}
 
 // Create ...
-func (m CampaignModel) Create(userID string, form forms.CreateCampaignForm) (campaignID uuid.UUID, err error) {
+func (m CampaignModel) Create(userID string, form forms.CreateCampaignForm) (campaignID string, err error) {
 	err = db.GetDB().QueryRow("INSERT INTO public.campaigns(created_by, name, discount_rate, voucher_limit, start_date, end_date) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", userID, form.Name, form.DiscountRate, form.VoucherLimit, form.StartDate, form.EndDate).Scan(&campaignID)
 	return campaignID, err
 }
