@@ -1,78 +1,117 @@
 package controllers
 
 import (
+	"encoding/json"
+
 	"github.com/Massad/gin-boilerplate/forms"
-	"github.com/Massad/gin-boilerplate/models"
+	"github.com/Massad/gin-boilerplate/services"
+	"github.com/Massad/gin-boilerplate/utils"
 
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
-//UserController ...
+// UserController ...
 type UserController struct{}
 
-var userModel = new(models.UserModel)
+var userService = new(services.UserService)
 var userForm = new(forms.UserForm)
 
-//getUserID ...
+// getUserID ...
 func getUserID(c *gin.Context) (userID string) {
 	//MustGet returns the value for the given key if it exists, otherwise it panics.
 	return c.MustGet("userID").(string)
 }
 
-//Login ...
+// Login ...
 func (ctrl UserController) Login(c *gin.Context) {
 	var loginForm forms.LoginForm
 
 	if validationErr := c.ShouldBindJSON(&loginForm); validationErr != nil {
 		message := userForm.Login(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
+		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: message})
 		return
 	}
 
-	user, token, err := userModel.Login(loginForm)
+	user, token, err := userService.Login(loginForm)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": "Invalid login details"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: "Invalid login details"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged in", "user": user, "token": token})
+	temp, _ := json.Marshal(&user)
+	var result map[string]interface{}
+	json.Unmarshal(temp, &result)
+	result["token"] = token
+	// c.JSON(http.StatusOK, gin.H{"message": "Successfully logged in", "user": user, "token": token})
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Successfully logged in", Data: result})
+
 }
 
-//Register ...
+// Register ...
 func (ctrl UserController) Register(c *gin.Context) {
 	var registerForm forms.RegisterForm
 
 	if validationErr := c.ShouldBindJSON(&registerForm); validationErr != nil {
 		message := userForm.Register(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: message})
 		return
 	}
 
-	user, err := userModel.Register(registerForm)
+	user, err := userService.Register(registerForm)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully registered", "user": user})
+	temp, _ := json.Marshal(&user)
+	var result map[string]interface{}
+	json.Unmarshal(temp, &result)
+
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Register new account successfully", Data: result})
 }
 
-//Logout ...
+// Logout ...
 func (ctrl UserController) Logout(c *gin.Context) {
-
-	au, err := authModel.ExtractTokenMetadata(c.Request)
+	_, err := authModel.ExtractTokenMetadata(c.Request)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "User not logged in"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: "User not logged in"})
+		return
+	}
+	// for redis
+	// deleted, delErr := authModel.DeleteAuth(au.AccessUUID)
+	// if delErr != nil || deleted == 0 { //if any goes wrong
+	// 	c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid request"})
+	// 	return
+	// }
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Successfully logged out"})
+}
+
+func (ctrl UserController) RegisterCampaign(c *gin.Context) {
+	var registerCampaignForm forms.RegisterCampaignForm
+
+	if validationErr := c.ShouldBindJSON(&registerCampaignForm); validationErr != nil {
+		message := userForm.Register(validationErr)
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: message})
 		return
 	}
 
-	deleted, delErr := authModel.DeleteAuth(au.AccessUUID)
-	if delErr != nil || deleted == 0 { //if any goes wrong
-		c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid request"})
-		return
-	}
+	// Create new user
+	// user, err := userService.RegisterCampaign(registerCampaignForm)
+	// if err != nil {
+	// 	c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: err.Error()})
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, gin.H{"message": "Successfully logged out"})
+	// Create voucher for this user
+	
+
+	// temp, _ := json.Marshal(&user)
+	// var result map[string]interface{}
+	// json.Unmarshal(temp, &result)
+
+	// // c.JSON(http.StatusOK, gin.H{"message": "Successfully registered", "user": user})
+	// c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Register new account successfully", Data: result})
 }
