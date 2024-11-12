@@ -9,7 +9,7 @@ import (
 	"github.com/google/uuid"
 )
 
-// Campaign ...
+// Voucher ...
 type Voucher struct {
 	ID             uuid.UUID `db:"id, primarykey" json:"id"`
 	CampaignID     uuid.UUID `db:"campaign_id" json:"campaign_id"`
@@ -24,7 +24,7 @@ type Voucher struct {
 	DeletedBy      uuid.UUID `db:"deleted_by" json:"deleted_by"`
 }
 
-// CampaignModel ...
+// VoucherModel ...
 type VoucherModel struct{}
 
 // Create ...
@@ -38,12 +38,6 @@ func (m VoucherModel) Create(form forms.CreateVoucherForm) (voucher Voucher, err
 	return voucher, err
 }
 
-// One ...
-// func (m VoucherModel) One(id string) (campaign Campaign, err error) {
-// 	err = db.GetDB().SelectOne(&campaign, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns where id = $1", id)
-// 	return campaign, err
-// }
-
 // All ...
 func (m VoucherModel) All(userID string) (campaigns []Voucher, err error) {
 	_, err = db.GetDB().Select(&campaigns, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns WHERE user_id=$1", userID)
@@ -56,40 +50,3 @@ func (m VoucherModel) CountByCampaign(campaignID string) (result int, err error)
 	return result, err
 }
 
-
-// Update ...
-// func (m VoucherModel) Update(userID string, id int64, form forms.CreateCampaignForm) (err error) {
-// 	//METHOD 1
-// 	//Check the campaign by ID using this way
-// 	// _, err = m.One(userID, id)
-// 	// if err != nil {
-// 	// 	return err
-// 	// }
-
-// 	operation, err := db.GetDB().Exec("UPDATE public.campaign SET name=$2, discount_rate=$3, voucher_limit=$4, start_date=$5, end_date=$6 WHERE id=$1", id, form.Name, form.DiscountRate, form.VoucherLimit, form.StartDate, form.EndDate)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	success, _ := operation.RowsAffected()
-// 	if success == 0 {
-// 		return errors.New("updated 0 records")
-// 	}
-
-// 	return err
-// }
-
-// Delete ...
-// func (m VoucherModel) Delete(userID, id string) (err error) {
-// 	operation, err := db.GetDB().Exec("UPDATE campaigns SET deleted_by=$2 WHERE id=$1", id, userID)
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	success, _ := operation.RowsAffected()
-// 	if success == 0 {
-// 		return errors.New("no records were deleted")
-// 	}
-
-// 	return err
-// }

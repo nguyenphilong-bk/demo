@@ -25,6 +25,15 @@ func getUserID(c *gin.Context) (userID string) {
 }
 
 // Login ...
+// @Summary      Login
+// @Description  Login
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      forms.LoginForm  true  "Login data"
+// @Success      200   {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /v1/login [post]
 func (ctrl UserController) Login(c *gin.Context) {
 	var loginForm forms.LoginForm
 
@@ -51,6 +60,15 @@ func (ctrl UserController) Login(c *gin.Context) {
 }
 
 // Register ...
+// @Summary      Sign up
+// @Description  Normal Sign up
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      forms.RegisterForm  true  "Register data"
+// @Success      200   {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /v1/register [post]
 func (ctrl UserController) Register(c *gin.Context) {
 	var registerForm forms.RegisterForm
 
@@ -89,6 +107,16 @@ func (ctrl UserController) Logout(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Successfully logged out"})
 }
 
+// Register in a campaign ...
+// @Summary      Sign up
+// @Description  Sign up in a campaign
+// @Tags         Users
+// @Accept       json
+// @Produce      json
+// @Param        user  body      forms.RegisterCampaignForm  true  "Register campaign data"
+// @Success      200   {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Router       /v1/register/campaign [post]
 func (ctrl UserController) RegisterCampaign(c *gin.Context) {
 	var registerCampaignForm forms.RegisterCampaignForm
 
@@ -106,7 +134,6 @@ func (ctrl UserController) RegisterCampaign(c *gin.Context) {
 		})
 		return
 	}
-
 
 	temp, _ := json.Marshal(&userVoucher)
 	var result map[string]interface{}

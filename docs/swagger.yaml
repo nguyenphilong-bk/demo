@@ -1,0 +1,285 @@
+definitions:
+  forms.CreateCampaignForm:
+    properties:
+      discount_rate:
+        maximum: 100
+        minimum: 1
+        type: number
+      end_date:
+        type: string
+      name:
+        maxLength: 100
+        minLength: 3
+        type: string
+      start_date:
+        type: string
+      voucher_limit:
+        minimum: 1
+        type: integer
+    required:
+    - discount_rate
+    - end_date
+    - name
+    - start_date
+    - voucher_limit
+    type: object
+  forms.LoginForm:
+    properties:
+      email:
+        type: string
+      password:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  forms.RegisterCampaignForm:
+    properties:
+      campaign_id:
+        type: string
+      email:
+        type: string
+      name:
+        description: fullName rule is in validator.go
+        maxLength: 20
+        minLength: 3
+        type: string
+      password:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - campaign_id
+    - email
+    - name
+    - password
+    type: object
+  forms.RegisterForm:
+    properties:
+      email:
+        type: string
+      name:
+        description: fullName rule is in validator.go
+        maxLength: 20
+        minLength: 3
+        type: string
+      password:
+        maxLength: 50
+        minLength: 3
+        type: string
+    required:
+    - email
+    - name
+    - password
+    type: object
+  utils.Response:
+    properties:
+      data:
+        additionalProperties: true
+        type: object
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+  utils.RetrieveResponse:
+    properties:
+      data:
+        items: {}
+        type: array
+      message:
+        type: string
+      status_code:
+        type: integer
+    type: object
+info:
+  contact: {}
+paths:
+  /v1/campaign:
+    post:
+      consumes:
+      - application/json
+      description: Create a new campaign
+      parameters:
+      - description: Create campaign data
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/forms.CreateCampaignForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      security:
+      - BearerAuth: []
+      summary: Create a new campaign
+      tags:
+      - Campaigns
+  /v1/campaign/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Soft delete a campaign
+      parameters:
+      - description: campaign id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+      security:
+      - BearerAuth: []
+      summary: Soft delete a campaign
+      tags:
+      - Campaigns
+    get:
+      consumes:
+      - application/json
+      description: Get detail data of a campaign
+      parameters:
+      - description: campaign id
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+      security:
+      - BearerAuth: []
+      summary: Campaign detail
+      tags:
+      - Campaigns
+  /v1/campaigns:
+    get:
+      consumes:
+      - application/json
+      description: Get all campaigns which is not deleted
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+      security:
+      - BearerAuth: []
+      summary: Get all campaigns
+      tags:
+      - Campaigns
+  /v1/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Login data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/forms.LoginForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Login
+      tags:
+      - Users
+  /v1/register:
+    post:
+      consumes:
+      - application/json
+      description: Normal Sign up
+      parameters:
+      - description: Register data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/forms.RegisterForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Sign up
+      tags:
+      - Users
+  /v1/register/campaign:
+    post:
+      consumes:
+      - application/json
+      description: Sign up in a campaign
+      parameters:
+      - description: Register campaign data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/forms.RegisterCampaignForm'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.Response'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.Response'
+      summary: Sign up
+      tags:
+      - Users
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"

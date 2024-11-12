@@ -21,6 +21,7 @@ func (service VoucherService) All(userID string) ([]models.Voucher, error) {
 	return results, nil
 }
 
+// Count the number of vouchers by campaign id
 func (service VoucherService) CountByCampaign(campaignID string) (int, error) {
 	counter, err := voucherModel.CountByCampaign(campaignID)
 	if err != nil {
@@ -30,6 +31,7 @@ func (service VoucherService) CountByCampaign(campaignID string) (int, error) {
 	return counter, nil
 }
 
+// Create a new voucher
 func (service VoucherService) Create(form forms.CreateVoucherForm) (voucher models.Voucher, err error) {
 	voucher, err = voucherModel.Create(form)
 	if err != nil {

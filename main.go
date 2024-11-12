@@ -9,15 +9,21 @@ import (
 
 	"github.com/Massad/gin-boilerplate/controllers"
 	"github.com/Massad/gin-boilerplate/db"
+	_ "github.com/Massad/gin-boilerplate/docs"
 	"github.com/Massad/gin-boilerplate/forms"
 	"github.com/Massad/gin-boilerplate/utils"
 	"github.com/gin-contrib/gzip"
-	uuid "github.com/google/uuid"
-	"github.com/joho/godotenv"
-
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
+	uuid "github.com/google/uuid"
+	"github.com/joho/godotenv"
+	swaggerfiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 // CORSMiddleware ...
 // CORS (Cross-Origin Resource Sharing)
@@ -150,6 +156,7 @@ func main() {
 	r.NoRoute(func(c *gin.Context) {
 		c.HTML(404, "404.html", gin.H{})
 	})
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerfiles.Handler))
 
 	port := os.Getenv("PORT")
 

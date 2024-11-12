@@ -18,7 +18,18 @@ type CampaignController struct{}
 var campaignService = new(services.CampaignService)
 var campaignForm = new(forms.CampaignForm)
 
-//Create ...
+// Create ...
+
+// @Summary      Create a new campaign
+// @Description  Create a new campaign
+// @Tags         Campaigns
+// @Accept       json
+// @Produce      json
+// @Param        data  body      forms.CreateCampaignForm  true  "Create campaign data"
+// @Success      200   {object}  utils.Response
+// @Failure      400  {object}  utils.Response
+// @Security     BearerAuth
+// @Router       /v1/campaign [post]
 func (ctrl CampaignController) Create(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -46,6 +57,15 @@ func (ctrl CampaignController) Create(c *gin.Context) {
 }
 
 //All ...
+// @Summary      Get all campaigns
+// @Description  Get all campaigns which is not deleted
+// @Tags         Campaigns
+// @Accept       json
+// @Produce      json
+// @Success      200   {object}  utils.RetrieveResponse
+// @Failure      400  {object}  utils.RetrieveResponse
+// @Security     BearerAuth
+// @Router       /v1/campaigns [get]
 func (ctrl CampaignController) All(c *gin.Context) {
 	// userID := getUserID(c)
 	results, err := campaignService.All()
@@ -64,13 +84,22 @@ func (ctrl CampaignController) All(c *gin.Context) {
 }
 
 //One ...
+// @Summary      Campaign detail
+// @Description  Get detail data of a campaign
+// @Tags         Campaigns
+// @Accept       json
+// @Produce      json
+// @Param        id   path string  true  "campaign id"
+// @Success      200   {object}  utils.RetrieveResponse
+// @Failure      400  {object}  utils.RetrieveResponse
+// @Security     BearerAuth
+// @Router       /v1/campaign/{id} [get]
 func (ctrl CampaignController) One(c *gin.Context) {
 	// userID := getUserID(c)
 	id := c.Param("id")
 
 	data, err := campaignService.One(id)
 	if err != nil {
-		// c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Campaign not found"})
 		c.AbortWithStatusJSON(http.StatusNotFound, utils.Response{StatusCode: http.StatusBadRequest, Message: "Campaign not found"})
 
 		return
@@ -84,36 +113,17 @@ func (ctrl CampaignController) One(c *gin.Context) {
 	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Data: result})
 }
 
-//Update ...
-// func (ctrl CampaignController) Update(c *gin.Context) {
-// 	userID := getUserID(c)
-
-// 	id := c.Param("id")
-
-// 	getID, err := strconv.ParseInt(id, 10, 64)
-// 	if getID == 0 || err != nil {
-// 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Invalid parameter"})
-// 		return
-// 	}
-
-// 	var form forms.CreateCampaignForm
-
-// 	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
-// 		message := campaignForm.Create(validationErr)
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
-// 		return
-// 	}
-
-// 	err = campaignService.Update(userID, getID, form)
-// 	if err != nil {
-// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be updated"})
-// 		return
-// 	}
-
-// 	c.JSON(http.StatusOK, gin.H{"message": "Campaign updated"})
-// }
-
 //Delete ...
+// @Summary      Soft delete a campaign
+// @Description  Soft delete a campaign
+// @Tags         Campaigns
+// @Accept       json
+// @Produce      json
+// @Param        id   path string  true  "campaign id"
+// @Success      200   {object}  utils.RetrieveResponse
+// @Failure      400  {object}  utils.RetrieveResponse
+// @Security     BearerAuth
+// @Router       /v1/campaign/{id} [delete]
 func (ctrl CampaignController) Delete(c *gin.Context) {
 	userID := getUserID(c)
 
@@ -121,7 +131,6 @@ func (ctrl CampaignController) Delete(c *gin.Context) {
 
 	err := campaignService.Delete(userID, id)
 	if err != nil {
-		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be deleted"})
 		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: "Campaign could not be deleted"})
 
 		return
