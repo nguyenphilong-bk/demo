@@ -1,11 +1,11 @@
 package models
 
 import (
-	"errors"
 	"time"
 
 	"github.com/Massad/gin-boilerplate/db"
 	"github.com/Massad/gin-boilerplate/forms"
+	"github.com/Massad/gin-boilerplate/utils"
 	"github.com/google/uuid"
 )
 
@@ -29,19 +29,31 @@ type CampaignModel struct{}
 // Create ...
 func (m CampaignModel) Create(userID string, form forms.CreateCampaignForm) (campaignID string, err error) {
 	err = db.GetDB().QueryRow("INSERT INTO public.campaigns(created_by, name, discount_rate, voucher_limit, start_date, end_date) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", userID, form.Name, form.DiscountRate, form.VoucherLimit, form.StartDate, form.EndDate).Scan(&campaignID)
+	if err != nil {
+		return campaignID, utils.NewServerError(utils.INTERNAL_SERVER_ERROR, err.Error(), "Internal server error")
+	}
+
 	return campaignID, err
 }
 
 // One ...
 func (m CampaignModel) One(id string) (campaign Campaign, err error) {
-	err = db.GetDB().SelectOne(&campaign, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns where id = $1", id)
-	return campaign, err
+	err = db.GetDB().SelectOne(&campaign, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns where id = $1 AND deleted_by is null", id)
+	if err != nil {
+		return campaign, utils.NewServerError(utils.INTERNAL_SERVER_ERROR, err.Error(), "Internal server error")
+	}
+
+	return campaign, nil
 }
 
 // All ...
 func (m CampaignModel) All() (campaigns []Campaign, err error) {
 	_, err = db.GetDB().Select(&campaigns, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns WHERE deleted_by IS NULL")
-	return campaigns, err
+	if err != nil {
+		return campaigns, utils.NewServerError(utils.INTERNAL_SERVER_ERROR, err.Error(), "Internal server error")
+	}
+
+	return campaigns, nil
 }
 
 // Update ...
@@ -55,12 +67,12 @@ func (m CampaignModel) Update(userID string, id int64, form forms.CreateCampaign
 
 	operation, err := db.GetDB().Exec("UPDATE public.campaign SET name=$2, discount_rate=$3, voucher_limit=$4, start_date=$5, end_date=$6 WHERE id=$1", id, form.Name, form.DiscountRate, form.VoucherLimit, form.StartDate, form.EndDate)
 	if err != nil {
-		return err
+		return utils.NewServerError(utils.INTERNAL_SERVER_ERROR, err.Error(), "Internal server error")
 	}
 
 	success, _ := operation.RowsAffected()
 	if success == 0 {
-		return errors.New("updated 0 records")
+		return utils.NewClientError(utils.BAD_REQUEST, "no records were updated", "no records were updated")
 	}
 
 	return err
@@ -70,12 +82,12 @@ func (m CampaignModel) Update(userID string, id int64, form forms.CreateCampaign
 func (m CampaignModel) Delete(userID, id string) (err error) {
 	operation, err := db.GetDB().Exec("UPDATE campaigns SET deleted_by=$2 WHERE id=$1", id, userID)
 	if err != nil {
-		return err
+		return utils.NewServerError(utils.INTERNAL_SERVER_ERROR, "Internal server error", "Internal server error")
 	}
 
 	success, _ := operation.RowsAffected()
 	if success == 0 {
-		return errors.New("no records were deleted")
+		return utils.NewClientError(utils.BAD_REQUEST, "no records were deleted", "no records were deleted")
 	}
 
 	return err

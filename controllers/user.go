@@ -98,20 +98,19 @@ func (ctrl UserController) RegisterCampaign(c *gin.Context) {
 		return
 	}
 
-	// Create new user
-	// user, err := userService.RegisterCampaign(registerCampaignForm)
-	// if err != nil {
-	// 	c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{StatusCode: http.StatusBadRequest, Message: err.Error()})
-	// 	return
-	// }
+	userVoucher, err := userService.RegisterCampaign(registerCampaignForm)
+	if err != nil {
+		c.AbortWithStatusJSON(http.StatusBadRequest, utils.Response{
+			StatusCode: http.StatusBadRequest,
+			Message:    err.Error(),
+		})
+		return
+	}
 
-	// Create voucher for this user
-	
 
-	// temp, _ := json.Marshal(&user)
-	// var result map[string]interface{}
-	// json.Unmarshal(temp, &result)
+	temp, _ := json.Marshal(&userVoucher)
+	var result map[string]interface{}
+	json.Unmarshal(temp, &result)
 
-	// // c.JSON(http.StatusOK, gin.H{"message": "Successfully registered", "user": user})
-	// c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Register new account successfully", Data: result})
+	c.JSON(http.StatusOK, utils.Response{StatusCode: http.StatusOK, Message: "Register new account successfully", Data: result})
 }

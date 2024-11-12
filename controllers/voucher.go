@@ -1,10 +1,8 @@
 package controllers
 
 import (
-	"strconv"
-
 	"github.com/Massad/gin-boilerplate/forms"
-	"github.com/Massad/gin-boilerplate/models"
+	"github.com/Massad/gin-boilerplate/services"
 
 	"net/http"
 
@@ -14,35 +12,35 @@ import (
 //CampaignController ...
 type VoucherController struct{}
 
-var voucherModel = new(models.VoucherModel)
+var voucherService = new(services.VoucherService)
 
 //Create ...
 func (ctrl VoucherController) Create(c *gin.Context) {
-	userID := getUserID(c)
+	// userID := getUserID(c)
 
 	var form forms.CreateCampaignForm
 
 	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
 		message := campaignForm.Create(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
 		return
 	}
 
-	id, err := campaignModel.Create(userID, form)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Campaign could not be created"})
-		return
-	}
+	// id, err := voucherModel.Create(userID, form)
+	// if err != nil {
+	// 	c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": "Campaign could not be created"})
+	// 	return
+	// }
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign created", "id": id})
+	// c.JSON(http.StatusOK, gin.H{"message": "Campaign created", "id": id})
 }
 
 //All ...
 func (ctrl VoucherController) All(c *gin.Context) {
 	userID := getUserID(c)
-	results, err := voucherModel.All(userID)
+	results, err := voucherService.All(userID)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Could not get campaigns"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Could not get campaigns"})
 		return
 	}
 
@@ -50,60 +48,60 @@ func (ctrl VoucherController) All(c *gin.Context) {
 }
 
 //One ...
-func (ctrl VoucherController) One(c *gin.Context) {
-	// userID := getUserID(c)
-	id := c.Param("id")
+// func (ctrl VoucherController) One(c *gin.Context) {
+// 	// userID := getUserID(c)
+// 	id := c.Param("id")
 
-	data, err := campaignModel.One(id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Campaign not found"})
-		return
-	}
+// 	data, err := campaignModel.One(id)
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Campaign not found"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": data})
-}
+// 	c.JSON(http.StatusOK, gin.H{"data": data})
+// }
 
 //Update ...
-func (ctrl VoucherController) Update(c *gin.Context) {
-	userID := getUserID(c)
+// func (ctrl VoucherController) Update(c *gin.Context) {
+// 	userID := getUserID(c)
 
-	id := c.Param("id")
+// 	id := c.Param("id")
 
-	getID, err := strconv.ParseInt(id, 10, 64)
-	if getID == 0 || err != nil {
-		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Invalid parameter"})
-		return
-	}
+// 	getID, err := strconv.ParseInt(id, 10, 64)
+// 	if getID == 0 || err != nil {
+// 		c.AbortWithStatusJSON(http.StatusNotFound, gin.H{"Message": "Invalid parameter"})
+// 		return
+// 	}
 
-	var form forms.CreateCampaignForm
+// 	var form forms.CreateCampaignForm
 
-	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
-		message := campaignForm.Create(validationErr)
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"message": message})
-		return
-	}
+// 	if validationErr := c.ShouldBindJSON(&form); validationErr != nil {
+// 		message := campaignForm.Create(validationErr)
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"message": message})
+// 		return
+// 	}
 
-	err = campaignModel.Update(userID, getID, form)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Campaign could not be updated"})
-		return
-	}
+// 	err = campaignModel.Update(userID, getID, form)
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be updated"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign updated"})
-}
+// 	c.JSON(http.StatusOK, gin.H{"message": "Campaign updated"})
+// }
 
 //Delete ...
-func (ctrl VoucherController) Delete(c *gin.Context) {
-	userID := getUserID(c)
+// func (ctrl VoucherController) Delete(c *gin.Context) {
+// 	userID := getUserID(c)
 
-	id := c.Param("id")
+// 	id := c.Param("id")
 
-	err := campaignModel.Delete(userID, id)
-	if err != nil {
-		c.AbortWithStatusJSON(http.StatusNotAcceptable, gin.H{"Message": "Campaign could not be deleted"})
-		return
-	}
+// 	err := campaignModel.Delete(userID, id)
+// 	if err != nil {
+// 		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Campaign could not be deleted"})
+// 		return
+// 	}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Campaign deleted"})
+// 	c.JSON(http.StatusOK, gin.H{"message": "Campaign deleted"})
 
-}
+// }

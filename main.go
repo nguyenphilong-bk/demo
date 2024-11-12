@@ -10,6 +10,7 @@ import (
 	"github.com/Massad/gin-boilerplate/controllers"
 	"github.com/Massad/gin-boilerplate/db"
 	"github.com/Massad/gin-boilerplate/forms"
+	"github.com/Massad/gin-boilerplate/utils"
 	"github.com/gin-contrib/gzip"
 	uuid "github.com/google/uuid"
 	"github.com/joho/godotenv"
@@ -18,8 +19,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 )
 
-//CORSMiddleware ...
-//CORS (Cross-Origin Resource Sharing)
+// CORSMiddleware ...
+// CORS (Cross-Origin Resource Sharing)
 func CORSMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost")
@@ -38,8 +39,8 @@ func CORSMiddleware() gin.HandlerFunc {
 	}
 }
 
-//RequestIDMiddleware ...
-//Generate a unique ID and attach it to each request for future reference or use
+// RequestIDMiddleware ...
+// Generate a unique ID and attach it to each request for future reference or use
 func RequestIDMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		uuid := uuid.New()
@@ -48,10 +49,25 @@ func RequestIDMiddleware() gin.HandlerFunc {
 	}
 }
 
+func ErrorHandlerMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		c.Next()
+
+		if len(c.Errors) > 0 {
+			err := c.Errors[0].Err
+			if httpErr, ok := err.(utils.HttpError); ok {
+				c.JSON(httpErr.StatusCode(), gin.H{"status_code": httpErr.StatusCode(), "error": httpErr.UserMessage()})
+			} else {
+				c.JSON(http.StatusInternalServerError, gin.H{"status_code": http.StatusInternalServerError, "error": "Internal Server Error"})
+			}
+		}
+	}
+}
+
 var auth = new(controllers.AuthController)
 
-//TokenAuthMiddleware ...
-//JWT Authentication middleware attached to each request that needs to be authenitcated to validate the access_token in the header
+// TokenAuthMiddleware ...
+// JWT Authentication middleware attached to each request that needs to be authenitcated to validate the access_token in the header
 func TokenAuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		auth.TokenValid(c)
@@ -79,6 +95,7 @@ func main() {
 	r.Use(CORSMiddleware())
 	r.Use(RequestIDMiddleware())
 	r.Use(gzip.Gzip(gzip.DefaultCompression))
+	r.Use(ErrorHandlerMiddleware())
 
 	//Start PostgreSQL database
 	//Example: db.GetDB() - More info in the models folder
@@ -93,9 +110,10 @@ func main() {
 		/*** START USER ***/
 		user := new(controllers.UserController)
 
-		v1.POST("/user/login", user.Login)
-		v1.POST("/user/register", user.Register)
-		v1.GET("/user/logout", user.Logout)
+		v1.POST("/login", user.Login)
+		v1.POST("/register", user.Register)
+		v1.GET("/logout", user.Logout)
+		v1.POST("/register/campaign", user.RegisterCampaign)
 
 		/*** START AUTH ***/
 		// auth := new(controllers.AuthController)
@@ -109,9 +127,8 @@ func main() {
 		v1.POST("/campaign", TokenAuthMiddleware(), campaign.Create)
 		v1.GET("/campaigns", TokenAuthMiddleware(), campaign.All)
 		v1.GET("/campaign/:id", TokenAuthMiddleware(), campaign.One)
-		v1.PUT("/campaign/:id", TokenAuthMiddleware(), campaign.Update)
+		// v1.PUT("/campaign/:id", TokenAuthMiddleware(), campaign.Update)
 		v1.DELETE("/campaign/:id", TokenAuthMiddleware(), campaign.Delete)
-
 
 		/*** START Campaign ***/
 		voucher := new(controllers.VoucherController)

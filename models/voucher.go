@@ -4,6 +4,8 @@ import (
 	"time"
 
 	"github.com/Massad/gin-boilerplate/db"
+	"github.com/Massad/gin-boilerplate/forms"
+	"github.com/Massad/gin-boilerplate/utils"
 	"github.com/google/uuid"
 )
 
@@ -26,10 +28,15 @@ type Voucher struct {
 type VoucherModel struct{}
 
 // Create ...
-// func (m VoucherModel) Create(userID string, form forms.CreateCampaignForm) (campaignID uuid.UUID, err error) {
-// 	err = db.GetDB().QueryRow("INSERT INTO public.campaigns(created_by, name, discount_rate, voucher_limit, start_date, end_date) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", userID, form.Name, form.DiscountRate, form.VoucherLimit, form.StartDate, form.EndDate).Scan(&campaignID)
-// 	return campaignID, err
-// }
+func (m VoucherModel) Create(form forms.CreateVoucherForm) (voucher Voucher, err error) {
+	err = db.GetDB().QueryRow("INSERT INTO vouchers(campaign_id, user_id, code, discount_rate, expiration_date, status) VALUES($1, $2, $3, $4, $5, $6) RETURNING id", form.CampaignID, form.UserID, form.Code, form.DiscountRate, form.ExpirationDate, form.Status).Scan(&voucher.ID)
+	if err != nil {
+		return voucher, utils.NewServerError(utils.INTERNAL_SERVER_ERROR, err.Error(), "Internal server error")
+	}
+
+	voucher.Code = form.Code
+	return voucher, err
+}
 
 // One ...
 // func (m VoucherModel) One(id string) (campaign Campaign, err error) {
@@ -42,6 +49,13 @@ func (m VoucherModel) All(userID string) (campaigns []Voucher, err error) {
 	_, err = db.GetDB().Select(&campaigns, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns WHERE user_id=$1", userID)
 	return campaigns, err
 }
+
+// Count voucher by campaign_id ...
+func (m VoucherModel) CountByCampaign(campaignID string) (result int, err error) {
+	err = db.GetDB().SelectOne(&result, "SELECT count(id) FROM vouchers WHERE campaign_id=$1", campaignID)
+	return result, err
+}
+
 
 // Update ...
 // func (m VoucherModel) Update(userID string, id int64, form forms.CreateCampaignForm) (err error) {

@@ -21,6 +21,12 @@ type User struct {
 	CreatedAt time.Time `db:"created_at" json:"-"`
 }
 
+type UserVoucher struct {
+	User
+	Code      string `json:"code"`
+	VoucherID string `json:"voucher_id"`
+}
+
 // UserModel ...
 type UserModel struct{}
 

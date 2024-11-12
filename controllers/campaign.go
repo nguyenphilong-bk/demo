@@ -50,7 +50,6 @@ func (ctrl CampaignController) All(c *gin.Context) {
 	// userID := getUserID(c)
 	results, err := campaignService.All()
 	if err != nil {
-		// c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Could not get campaigns"})
 		c.AbortWithStatusJSON(http.StatusBadRequest, utils.RetrieveResponse{StatusCode: http.StatusBadRequest, Message: "Could not get campaigns"})
 
 		return
