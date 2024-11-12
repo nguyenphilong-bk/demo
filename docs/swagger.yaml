@@ -225,6 +225,27 @@ paths:
       summary: Login
       tags:
       - Users
+  /v1/my-voucher:
+    get:
+      consumes:
+      - application/json
+      description: Get all valid vouchers of mine
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.RetrieveResponse'
+      security:
+      - BearerAuth: []
+      summary: Get my vouchers
+      tags:
+      - Vouchers
   /v1/register:
     post:
       consumes:

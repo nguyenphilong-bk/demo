@@ -207,6 +207,40 @@
                 }
             }
         },
+        "/v1/my-voucher": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get all valid vouchers of mine",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Vouchers"
+                ],
+                "summary": "Get my vouchers",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.RetrieveResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.RetrieveResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/register": {
             "post": {
                 "description": "Normal Sign up",

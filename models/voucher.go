@@ -39,9 +39,9 @@ func (m VoucherModel) Create(form forms.CreateVoucherForm) (voucher Voucher, err
 }
 
 // All ...
-func (m VoucherModel) All(userID string) (campaigns []Voucher, err error) {
-	_, err = db.GetDB().Select(&campaigns, "SELECT id, name, discount_rate, voucher_limit, start_date, end_date, created_by FROM campaigns WHERE user_id=$1", userID)
-	return campaigns, err
+func (m VoucherModel) All(userID string) (vouchers []Voucher, err error) {
+	_, err = db.GetDB().Select(&vouchers, "SELECT id, campaign_id, user_id,discount_rate, status, expiration_date, status FROM vouchers WHERE user_id=$1", userID)
+	return vouchers, err
 }
 
 // Count voucher by campaign_id ...

@@ -3,6 +3,7 @@ package controllers
 import (
 	"github.com/Massad/gin-boilerplate/forms"
 	"github.com/Massad/gin-boilerplate/services"
+	"github.com/Massad/gin-boilerplate/utils"
 
 	"net/http"
 
@@ -36,13 +37,27 @@ func (ctrl VoucherController) Create(c *gin.Context) {
 }
 
 //All ...
+// @Summary      Get my vouchers
+// @Description  Get all valid vouchers of mine
+// @Tags         Vouchers
+// @Accept       json
+// @Produce      json
+// @Success      200   {object}  utils.RetrieveResponse
+// @Failure      400  {object}  utils.RetrieveResponse
+// @Security     BearerAuth
+// @Router       /v1/my-voucher [get]
 func (ctrl VoucherController) All(c *gin.Context) {
 	userID := getUserID(c)
 	results, err := voucherService.All(userID)
 	if err != nil {
-		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Could not get campaigns"})
+		c.AbortWithStatusJSON(http.StatusBadRequest, gin.H{"Message": "Could not get vouchers"})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"results": results})
+	data := make([]interface{}, len(results))
+	for i, v := range results {
+		data[i] = v
+	}
+
+	c.JSON(http.StatusOK, utils.RetrieveResponse{Data: data, StatusCode: 200, Message: "Get vouchers successfully"})
 }
