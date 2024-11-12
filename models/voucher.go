@@ -40,7 +40,7 @@ func (m VoucherModel) Create(form forms.CreateVoucherForm) (voucher Voucher, err
 
 // All ...
 func (m VoucherModel) All(userID string) (vouchers []Voucher, err error) {
-	_, err = db.GetDB().Select(&vouchers, "SELECT id, campaign_id, user_id,discount_rate, status, expiration_date, status FROM vouchers WHERE user_id=$1", userID)
+	_, err = db.GetDB().Select(&vouchers, "SELECT id, campaign_id, user_id,discount_rate, status, expiration_date, status, code FROM vouchers WHERE user_id=$1", userID)
 	return vouchers, err
 }
 
