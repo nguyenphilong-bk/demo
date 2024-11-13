@@ -62,7 +62,7 @@ Those are added to the `updated_at` and `created_at` columns to update the lates
 
 ## Running Your Application
 
-Rename .env_rename_me to .env and place your credentials
+Rename .env.example to .env and place your credentials
 
 ```
 $ mv .env_rename_me .env

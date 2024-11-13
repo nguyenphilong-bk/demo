@@ -5,55 +5,6 @@ SET standard_conforming_strings = on;
 SET check_function_bodies = false;
 SET client_min_messages = warning;
 
---
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
---
-
-CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
-
-
---
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
---
-
-COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
-
-
-CREATE FUNCTION created_at_column() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-
-BEGIN
-	NEW.updated_at = EXTRACT(EPOCH FROM NOW());
-	NEW.created_at = EXTRACT(EPOCH FROM NOW());
-    RETURN NEW;
-END;
-
-$$;
-
-
-ALTER FUNCTION public.created_at_column() OWNER TO postgres;
-
---
--- TOC entry 190 (class 1255 OID 36646)
--- Name: update_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
---
-
-CREATE FUNCTION update_at_column() RETURNS trigger
-    LANGUAGE plpgsql
-    AS $$
-
-BEGIN
-    NEW.updated_at = EXTRACT(EPOCH FROM NOW());
-    RETURN NEW;
-END;
-
-$$;
-
-
-ALTER FUNCTION public.update_at_column() OWNER TO postgres;
-
-
 SET search_path = public, pg_catalog;
 
 SET default_tablespace = '';
@@ -81,10 +32,6 @@ ALTER TABLE "user" OWNER TO postgres;
 ALTER TABLE ONLY "user"
     ADD CONSTRAINT user_id PRIMARY KEY (id);
 
-
-CREATE TRIGGER create_user_created_at BEFORE INSERT ON "user" FOR EACH ROW EXECUTE PROCEDURE created_at_column();
-CREATE TRIGGER update_user_updated_at BEFORE UPDATE ON "user" FOR EACH ROW EXECUTE PROCEDURE update_at_column();
-
 CREATE TABLE campaigns (
     id uuid DEFAULT gen_random_uuid(),
     name VARCHAR(255),
@@ -93,7 +40,9 @@ CREATE TABLE campaigns (
     start_date TIMESTAMP,
     end_date TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+    created_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_by uuid,
+    deleted_by uuid
 );
 
 ALTER TABLE "campaigns" OWNER TO postgres;
@@ -101,6 +50,22 @@ ALTER TABLE "campaigns" OWNER TO postgres;
 ALTER TABLE ONLY "campaigns"
     ADD CONSTRAINT campaign_id PRIMARY KEY (id);
 
+CREATE TABLE vouchers (
+    id uuid DEFAULT gen_random_uuid(),
+    campaign_id uuid,
+    user_id uuid,
+    discount_rate DECIMAL(5, 2) CHECK (discount_rate <= 100),
+    code VARCHAR(255),
+    status VARCHAR(255),
+    expiration_date TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMP NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE "vouchers" OWNER TO postgres;
+
+ALTER TABLE ONLY "vouchers"
+    ADD CONSTRAINT campaign_id PRIMARY KEY (id);
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 REVOKE ALL ON SCHEMA public FROM postgres;
